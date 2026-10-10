@@ -1,0 +1,22 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    # Desligado até o backstage terminar de configurar o repo (ele grava DEPLOY_ENABLED=true).
+    if: vars.DEPLOY_ENABLED == 'true'
+    uses: edniltonjr/infra-workflows/.github/workflows/deploy.yml@v1
+    with:
+      app-name: ${{ vars.APP_NAME }}
+      domain: ${{ vars.APP_DOMAIN }}
+      deploy-path: ${{ vars.DEPLOY_PATH }}
+      ssh-port: ${{ vars.DEPLOY_SSH_PORT }}
+    secrets: inherit

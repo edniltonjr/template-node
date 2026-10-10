@@ -1,0 +1,28 @@
+# Usado na VPS de aplicações. O workflow de deploy grava IMAGE e os segredos em .env.
+# Requer a rede externa do Traefik (padrão "traefik") e o certresolver "letsencrypt".
+services:
+  app:
+    image: ${IMAGE:?IMAGE não definida}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: "__APP_PORT__"
+    networks:
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
+      - traefik.http.routers.__APP_NAME__.rule=Host(`__APP_DOMAIN__`)
+      - traefik.http.routers.__APP_NAME__.entrypoints=websecure
+      - traefik.http.routers.__APP_NAME__.tls.certresolver=letsencrypt
+      - traefik.http.services.__APP_NAME__.loadbalancer.server.port=__APP_PORT__
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}
